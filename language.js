@@ -13,8 +13,10 @@
     'Configurações': '設定',
     'MENU PRINCIPAL': 'メインメニュー',
     'Portal Administrativo': '管理ポータル',
-    'Ambiente de desenvolvimento': '開発環境',
+    'PORTAL ADMINISTRATIVO': '管理ポータル',
+    'Administrador': '管理者',
     'Visão geral da operação': '業務全体の概要',
+    'Boa tarde': 'こんにちは',
     'Boa tarde 👋': 'こんにちは 👋',
     'Acompanhe as principais informações da Jabras Neo.': 'ジャブラスネオの主要情報を確認できます。',
     '＋ Nova solicitação de 有休': '＋ 有休を申請',
@@ -26,89 +28,93 @@
     '32 dias autorizados': '承認済み 32日',
     'Ausentes hoje': '本日の休暇者',
     'Em 4 locais de trabalho': '4事業所',
+    'SOLICITAÇÕES': '申請',
     'Solicitações recentes': '最近の申請',
-    'Ver todas': 'すべて表示',
+    'Ver todas →': 'すべて表示 →',
     'Funcionário': '社員',
+    'FUNCIONÁRIO': '社員',
     'Local': '配属先',
+    'LOCAL': '配属先',
     'Período': '期間',
+    'PERÍODO': '期間',
     'Status': 'ステータス',
+    'STATUS': 'ステータス',
     'Em análise': '確認中',
     'Aprovada': '承認済み',
     'Revisão': '修正依頼',
+    'CALENDÁRIO': 'カレンダー',
     'Próximas ausências': '今後の休暇予定',
-    'Calendário': 'カレンダー',
+    'Abrir →': '開く →',
     'Módulo em preparação': '準備中の機能',
     'A estrutura visual está pronta. Este módulo será desenvolvido nas próximas etapas.': '画面構成は準備済みです。この機能は次の段階で開発します。',
     'Voltar ao dashboard': 'ダッシュボードへ戻る',
-    'Pesquisar no portal...': 'ポータル内を検索...'
+    'Pesquisar no portal...': 'ポータル内を検索...',
+    'Meio período': '半日',
+    '1 dia de 有休': '有休 1日',
+    '2 dias de 有休': '有休 2日',
+    '3 dias de 有休': '有休 3日',
+    'ago.': '8月',
+    'AGO': '8月'
   };
+
   const jaToPt = Object.fromEntries(Object.entries(ptToJa).map(([pt, ja]) => [ja, pt]));
 
+  function translateTextNode(node, map) {
+    const original = node.nodeValue;
+    const trimmed = original.trim();
+    if (!trimmed) return;
+
+    if (map[trimmed]) {
+      node.nodeValue = original.replace(trimmed, map[trimmed]);
+      return;
+    }
+
+    let translated = trimmed;
+    Object.entries(map)
+      .sort((a, b) => b[0].length - a[0].length)
+      .forEach(([from, to]) => {
+        if (translated.includes(from)) translated = translated.split(from).join(to);
+      });
+
+    if (translated !== trimmed) node.nodeValue = original.replace(trimmed, translated);
+  }
+
   function translatePage() {
+    const root = document.querySelector('#app');
+    if (!root) return;
+
     document.documentElement.lang = currentLanguage === 'ja' ? 'ja' : 'pt-BR';
     const map = currentLanguage === 'ja' ? ptToJa : jaToPt;
-    const walker = document.createTreeWalker(document.querySelector('#app'), NodeFilter.SHOW_TEXT);
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
     const nodes = [];
     while (walker.nextNode()) nodes.push(walker.currentNode);
-    nodes.forEach(node => {
-      if (node.parentElement?.closest('.language-switcher')) return;
-      const text = node.nodeValue.trim();
-      if (map[text]) node.nodeValue = node.nodeValue.replace(text, map[text]);
-    });
-    document.querySelectorAll('input[placeholder]').forEach(input => {
-      if (map[input.placeholder]) input.placeholder = map[input.placeholder];
+
+    nodes.forEach(node => translateTextNode(node, map));
+
+    root.querySelectorAll('input[placeholder]').forEach(input => {
+      const placeholder = input.placeholder.trim();
+      if (map[placeholder]) input.placeholder = map[placeholder];
     });
   }
 
-  function injectSwitcher() {
-    const headerActions = document.querySelector('.header-actions');
-    if (!headerActions || headerActions.querySelector('.language-switcher')) return;
-    const switcher = document.createElement('div');
-    switcher.className = 'language-switcher';
-    switcher.innerHTML = `
-      <button class="language-button" type="button" aria-expanded="false">
-        <span aria-hidden="true">🌐</span>
-        <span class="language-button__label">${currentLanguage === 'ja' ? '日本語' : 'Português'}</span>
-        <span aria-hidden="true">▾</span>
-      </button>
-      <div class="language-menu" hidden>
-        <button class="language-option" type="button" data-language="pt">Português <span>✓</span></button>
-        <button class="language-option" type="button" data-language="ja">日本語 <span>✓</span></button>
-      </div>`;
-    const avatar = headerActions.querySelector('.avatar');
-    headerActions.insertBefore(switcher, avatar || null);
-
-    const button = switcher.querySelector('.language-button');
-    const menu = switcher.querySelector('.language-menu');
-    button.addEventListener('click', event => {
-      event.stopPropagation();
-      menu.hidden = !menu.hidden;
-      button.setAttribute('aria-expanded', String(!menu.hidden));
-    });
-    switcher.querySelectorAll('.language-option').forEach(option => {
-      option.classList.toggle('active', option.dataset.language === currentLanguage);
-      option.addEventListener('click', () => {
-        currentLanguage = option.dataset.language;
-        localStorage.setItem(STORAGE_KEY, currentLanguage);
-        menu.hidden = true;
-        render();
-      });
-    });
+  function refreshLanguage() {
+    currentLanguage = localStorage.getItem(STORAGE_KEY) || 'pt';
+    requestAnimationFrame(translatePage);
   }
 
   const originalRender = window.render;
-  if (typeof originalRender !== 'function') return;
+  if (typeof originalRender === 'function') {
+    window.render = function patchedRender() {
+      originalRender();
+      refreshLanguage();
+    };
+  }
 
-  window.render = function patchedRender() {
-    originalRender();
-    injectSwitcher();
-    translatePage();
-  };
+  const observer = new MutationObserver(() => refreshLanguage());
+  const app = document.querySelector('#app');
+  if (app) observer.observe(app, { childList: true, subtree: true });
 
-  document.addEventListener('click', () => {
-    const menu = document.querySelector('.language-menu');
-    if (menu) menu.hidden = true;
-  });
-
-  window.render();
+  window.addEventListener('storage', refreshLanguage);
+  document.addEventListener('DOMContentLoaded', refreshLanguage);
+  refreshLanguage();
 })();
