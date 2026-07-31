@@ -9,35 +9,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=20260731-4" />
+  <link rel="stylesheet" href="style.css?v=20260731-5" />
   <style>
     .jn-lang{position:relative;display:inline-flex;align-items:center;margin-left:10px}.jn-lang-btn{height:40px;padding:0 12px;border:1px solid #d9e3ef;border-radius:10px;background:#fff;color:#15314f;font:600 13px Inter,sans-serif;cursor:pointer;display:flex;align-items:center;gap:7px}.jn-lang-menu{position:absolute;right:0;top:46px;min-width:145px;background:#fff;border:1px solid #d9e3ef;border-radius:10px;box-shadow:0 14px 34px rgba(7,27,51,.16);padding:6px;z-index:9999}.jn-lang-menu[hidden]{display:none}.jn-lang-opt{width:100%;border:0;background:transparent;text-align:left;padding:9px 10px;border-radius:7px;cursor:pointer;font:500 13px Inter,sans-serif}.jn-lang-opt:hover,.jn-lang-opt.active{background:#edf5ff;color:#1764d8}
   </style>
 </head>
 <body>
   <div id="app"></div>
-  <script src="app.js?v=20260731-4"></script>
-  <script>
-    (()=>{
-      const key='jabras-portal-language';
-      const getHost=()=>document.querySelector('.header-actions,.topbar-actions,.header__actions')||[...document.querySelectorAll('header div, header section')].find(el=>/Vinicius|Administrador/.test(el.textContent||''));
-      function mount(){
-        if(document.querySelector('.jn-lang')) return;
-        const host=getHost(); if(!host) return;
-        const lang=localStorage.getItem(key)||'pt';
-        const box=document.createElement('div'); box.className='jn-lang';
-        box.innerHTML=`<button class="jn-lang-btn" type="button">🌐 <span>${lang==='ja'?'日本語':'Português'}</span> ▾</button><div class="jn-lang-menu" hidden><button class="jn-lang-opt ${lang==='pt'?'active':''}" data-lang="pt">Português</button><button class="jn-lang-opt ${lang==='ja'?'active':''}" data-lang="ja">日本語</button></div>`;
-        const profile=[...host.children].find(el=>/Vinicius|Administrador/.test(el.textContent||''));
-        host.insertBefore(box,profile||null);
-        const btn=box.querySelector('.jn-lang-btn'), menu=box.querySelector('.jn-lang-menu');
-        btn.onclick=e=>{e.stopPropagation();menu.hidden=!menu.hidden};
-        box.querySelectorAll('[data-lang]').forEach(o=>o.onclick=()=>{localStorage.setItem(key,o.dataset.lang);location.reload()});
-      }
-      document.addEventListener('click',()=>{const m=document.querySelector('.jn-lang-menu');if(m)m.hidden=true});
-      new MutationObserver(mount).observe(document.documentElement,{childList:true,subtree:true});
-      document.addEventListener('DOMContentLoaded',()=>{mount();setTimeout(mount,300);setTimeout(mount,1000)});
-    })();
-  </script>
-  <script src="language.js?v=20260731-4"></script>
+  <script src="app.js?v=20260731-5"></script>
 </body>
 </html>
