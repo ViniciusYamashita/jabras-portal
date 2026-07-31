@@ -9,13 +9,54 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=20260731-5" />
+  <link rel="stylesheet" href="style.css?v=20260731-6" />
   <style>
-    .jn-lang{position:relative;display:inline-flex;align-items:center;margin-left:10px}.jn-lang-btn{height:40px;padding:0 12px;border:1px solid #d9e3ef;border-radius:10px;background:#fff;color:#15314f;font:600 13px Inter,sans-serif;cursor:pointer;display:flex;align-items:center;gap:7px}.jn-lang-menu{position:absolute;right:0;top:46px;min-width:145px;background:#fff;border:1px solid #d9e3ef;border-radius:10px;box-shadow:0 14px 34px rgba(7,27,51,.16);padding:6px;z-index:9999}.jn-lang-menu[hidden]{display:none}.jn-lang-opt{width:100%;border:0;background:transparent;text-align:left;padding:9px 10px;border-radius:7px;cursor:pointer;font:500 13px Inter,sans-serif}.jn-lang-opt:hover,.jn-lang-opt.active{background:#edf5ff;color:#1764d8}
+    /* Ajuste do símbolo da empresa: mantém toda a largura visível. */
+    .brand-icon{
+      width:52px!important;
+      height:38px!important;
+      min-width:52px;
+      flex:0 0 52px;
+      object-fit:contain!important;
+      object-position:center!important;
+      overflow:visible!important;
+    }
+
+    /* Seletor de idioma definitivo. */
+    .language-switcher{position:relative;display:inline-flex;align-items:center}
+    .language-button{
+      height:40px;min-width:132px;padding:0 11px 0 10px;border:1px solid #dbe5f0;
+      border-radius:10px;background:#fff;color:#15314f;display:flex;align-items:center;
+      justify-content:space-between;gap:9px;font:600 12px Inter,sans-serif;cursor:pointer;
+      box-shadow:0 2px 7px rgba(15,42,77,.04);transition:border-color .18s,box-shadow .18s,transform .18s;
+    }
+    .language-button:hover{border-color:#b9cce2;box-shadow:0 6px 16px rgba(15,42,77,.08)}
+    .language-button[aria-expanded="true"]{border-color:#7aa7e8;box-shadow:0 0 0 3px rgba(29,101,216,.10)}
+    .language-globe{width:25px;height:25px;border-radius:8px;background:#edf5ff;color:#1d65d8;display:grid;place-items:center;font-size:14px;font-weight:800}
+    .language-chevron{font-size:13px;color:#8190a2;transition:transform .18s}
+    .language-button[aria-expanded="true"] .language-chevron{transform:rotate(180deg)}
+    .language-menu{
+      position:absolute;right:0;top:48px;width:210px;padding:7px;background:#fff;border:1px solid #dbe5f0;
+      border-radius:13px;box-shadow:0 18px 42px rgba(7,27,51,.18);z-index:9999;
+      transform-origin:top right;animation:languageMenuIn .16s ease-out;
+    }
+    .language-menu[hidden]{display:none}
+    .language-menu-title{padding:8px 10px 7px;color:#7b8a9a;font-size:9px;font-weight:800;letter-spacing:.13em;text-transform:uppercase}
+    .language-option{
+      width:100%;min-height:43px;border:0;background:transparent;border-radius:9px;padding:7px 9px;
+      display:flex;align-items:center;justify-content:space-between;color:#24384e;text-align:left;
+      font:600 12px Inter,sans-serif;cursor:pointer;transition:background .15s,color .15s;
+    }
+    .language-option:hover{background:#f3f7fc;color:#0f4ea8}
+    .language-option.active{background:#eaf2ff;color:#145bbf}
+    .language-option b{width:23px;height:23px;border-radius:7px;display:grid;place-items:center;background:#1d65d8;color:#fff;font-size:11px;opacity:0;transform:scale(.75);transition:.15s}
+    .language-option.active b{opacity:1;transform:scale(1)}
+    @keyframes languageMenuIn{from{opacity:0;transform:translateY(-5px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+    @media(max-width:900px){.language-button{min-width:42px;width:42px;padding:0;justify-content:center}.language-button>span:nth-child(2),.language-chevron{display:none}.language-globe{background:transparent}}
   </style>
 </head>
 <body>
   <div id="app"></div>
-  <script src="app.js?v=20260731-5"></script>
+  <script src="app.js?v=20260731-6"></script>
 </body>
 </html>
