@@ -11,8 +11,10 @@ const style=d.createElement('style');style.textContent=`
 .grid2,.grid3{width:100%;max-width:100%;min-width:0}
 .field{min-width:0}.field input,.field select,.field textarea{max-width:100%;min-width:0}
 .utility-status{display:flex;gap:18px;align-items:center;padding:8px 0 14px}.utility-status label{display:flex;align-items:center;gap:6px;font-weight:700;cursor:pointer}.required-note{font-size:12px;color:#c84343;margin-top:-6px;margin-bottom:10px}
-@media(max-width:900px){.drawer{width:100vw!important;max-width:100vw!important}.grid2,.grid3{grid-template-columns:1fr!important}}
+.master-section{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:16px}.master-section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.master-section-head h2{font-size:18px;margin:0}.master-section-head p{margin:3px 0 0;color:var(--muted);font-size:13px}.master-items{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.master-item{border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;align-items:center;justify-content:space-between;gap:14px;background:#fbfcfe}.master-item strong{display:block;margin-bottom:3px}.master-item small{color:var(--muted)}.hier-card{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px}.hier-title{display:flex;justify-content:space-between;align-items:center;gap:12px}.hier-sub{margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}.chip{display:inline-block;background:#eef3f9;border-radius:999px;padding:5px 8px;font-size:12px;margin:3px 4px 0 0}.hier-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+@media(max-width:900px){.drawer{width:100vw!important;max-width:100vw!important}.grid2,.grid3,.master-items{grid-template-columns:1fr!important}}
 `;d.head.appendChild(style);
+
 const oldOpenDorm=w.openDorm;
 w.openDorm=function(id,tab='dados'){
  oldOpenDorm(id,tab);
@@ -22,12 +24,51 @@ w.openDorm=function(id,tab='dados'){
  const parent=on.parentElement;const status=u.on!==false?'on':'off';
  parent.outerHTML=`<div class="utility-status"><label><input type="radio" name="${k}_status" id="${k}_status_on" value="on" ${status==='on'?'checked':''} onchange="toggleUtilityStatus('${k}')"> Ligado</label><label><input type="radio" name="${k}_status" id="${k}_status_off" value="off" ${status==='off'?'checked':''} onchange="toggleUtilityStatus('${k}')"> Desligado</label></div>`;
  });
- w.toggleUtilityStatus=function(k){const off=d.getElementById(k+'_status_off')?.checked,offDate=d.getElementById(k+'_offDate');if(offDate){offDate.required=!!off;offDate.style.borderColor=off&&!offDate.value?'#c84343':''} };
+ w.toggleUtilityStatus=function(k){const off=d.getElementById(k+'_status_off')?.checked,offDate=d.getElementById(k+'_offDate');if(offDate){offDate.required=!!off;offDate.style.borderColor=off&&!offDate.value?'#c84343':''}};
  ['electric','gas','water'].forEach(k=>w.toggleUtilityStatus(k));
  d.getElementById('drawerFoot').innerHTML=`<button class="btn" onclick="closeDrawer()">Fechar</button><button class="btn primary" onclick="saveDormV2('${id}','serv')">Salvar</button>`;
  };
  w.saveDormV2=function(id,t){const dorm=w.db.dorms.find(x=>x.id===id);if(t==='serv'){
  for(const k of ['electric','gas','water']){const off=d.getElementById(k+'_status_off')?.checked,offDate=d.getElementById(k+'_offDate')?.value||'';if(off&&!offDate){alert('Ao marcar '+(k==='electric'?'電気':k==='gas'?'ガス':'水道')+' como Desligado, a data de desligamento é obrigatória.');d.getElementById(k+'_offDate')?.focus();return}dorm.utilities[k]={on:!off,onDate:d.getElementById(k+'_onDate')?.value||'',offDate:offDate,note:d.getElementById(k+'_note')?.value||'',lastBillAddress:d.getElementById(k+'_last')?.value||''};}
  w.save();w.openDorm(id,'serv');w.render();return;}w.saveDorm(id,t)};
+
+w.masters=function(){
+ const count=(a)=>a?.length||0;
+ d.getElementById('view').innerHTML=`<div class="titlebar"><div><h1>Cadastros Mestres</h1><p>Cadastros organizados por área e pela relação entre os dados.</p></div></div>
+ <section class="master-section"><div class="master-section-head"><div><h2>🏢 Cliente e Fábrica</h2><p>Estrutura operacional do cliente até o local de trabalho.</p></div></div><div class="master-items">
+  <div class="master-item"><div><strong>Clientes e estrutura</strong><small>${count(w.db.clients)} clientes · ${count(w.db.factories)} fábricas · ${count(w.db.sectors)} setores · ${count(w.db.shifts)} 班</small></div><button class="btn primary" onclick="openClientHierarchy()">Gerenciar</button></div>
+ </div></section>
+ <section class="master-section"><div class="master-section-head"><div><h2>🏦 Bancos</h2><p>Agências ficam vinculadas ao banco correspondente.</p></div></div><div class="master-items">
+  <div class="master-item"><div><strong>Bancos e agências</strong><small>${count(w.db.banks)} bancos · ${count(w.db.branches)} agências</small></div><button class="btn primary" onclick="openBankHierarchy()">Gerenciar</button></div>
+ </div></section>
+ <section class="master-section"><div class="master-section-head"><div><h2>🏠 社宅</h2><p>Moradias e itens vinculados aos imóveis.</p></div></div><div class="master-items">
+  <div class="master-item"><div><strong>Imóveis</strong><small>${count(w.db.dorms)} cadastrados</small></div><button class="btn" onclick="page='dorms';render()">Abrir 社宅管理</button></div>
+ </div></section>
+ <section class="master-section"><div class="master-section-head"><div><h2>📄 Documentos</h2><p>Tipos utilizados no cadastro documental.</p></div></div><div class="master-items">
+  <div class="master-item"><div><strong>Tipos de documento</strong><small>${count(w.db.docTypes)} cadastrados</small></div><button class="btn primary" onclick="masterList('docType')">Gerenciar</button></div>
+ </div></section>`;
+};
+
+w.openClientHierarchy=function(){
+ w.openDrawer('🏢 Clientes e Fábricas');
+ const html=w.db.clients.map(c=>{const fs=w.db.factories.filter(f=>f.clientId===c.id);return `<div class="hier-card"><div class="hier-title"><div><b>${c.name}</b><div class="muted">${fs.length} fábrica(s)</div></div><button class="btn mini" onclick="editMaster('client','${c.id}')">Editar cliente</button></div><div class="hier-sub">${fs.map(f=>{const sectors=w.db.sectors.filter(s=>s.factoryId===f.id),shifts=w.db.shifts.filter(s=>s.factoryId===f.id);return `<div style="padding:9px 0;border-bottom:1px solid var(--line)"><b>${f.name}</b> ${f.code?`<span class="chip">${f.code}</span>`:''}<div><small class="muted">Setores</small><div>${sectors.map(s=>`<span class="chip">${s.name}</span>`).join('')||'<span class="muted">Nenhum</span>'}</div></div><div style="margin-top:6px"><small class="muted">班 / Turnos</small><div>${shifts.map(s=>`<span class="chip">${s.name}</span>`).join('')||'<span class="muted">Nenhum</span>'}</div></div><div class="hier-actions"><button class="btn mini" onclick="editMaster('factory','${f.id}')">Editar fábrica</button><button class="btn mini" onclick="newSectorForFactory('${f.id}')">+ Setor</button><button class="btn mini" onclick="newShiftForFactory('${f.id}')">+ 班</button></div></div>`}).join('')||'<p class="muted">Nenhuma fábrica cadastrada.</p>'}<div class="hier-actions"><button class="btn" onclick="newFactoryForClient('${c.id}')">+ Nova fábrica</button></div></div></div>`}).join('');
+ d.getElementById('drawerBody').innerHTML=html||'<div class="empty">Nenhum cliente cadastrado.</div>';
+ d.getElementById('drawerFoot').innerHTML=`<button class="btn" onclick="closeDrawer()">Fechar</button><button class="btn primary" onclick="editMaster('client','')">+ Novo cliente</button>`;
+};
+
+w.newFactoryForClient=function(clientId){w.editMaster('factory','');setTimeout(()=>{const x=d.getElementById('m_parent');if(x)x.value=clientId},0)};
+w.newSectorForFactory=function(factoryId){w.editMaster('sector','');setTimeout(()=>{const x=d.getElementById('m_parent');if(x)x.value=factoryId},0)};
+w.newShiftForFactory=function(factoryId){w.editMaster('shift','');setTimeout(()=>{const x=d.getElementById('m_parent');if(x)x.value=factoryId},0)};
+
+w.openBankHierarchy=function(){
+ w.openDrawer('🏦 Bancos');
+ const html=w.db.banks.map(b=>{const bs=w.db.branches.filter(x=>x.bankId===b.id);return `<div class="hier-card"><div class="hier-title"><div><b>${b.name}</b><div class="muted">Código ${b.code||'—'} · ${bs.length} agência(s)</div></div><button class="btn mini" onclick="editMaster('bank','${b.id}')">Editar banco</button></div><div class="hier-sub">${bs.map(a=>`<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)"><div><b>${a.name}</b><div class="muted">店番 ${a.code||'—'}</div></div><button class="btn mini" onclick="editMaster('branch','${a.id}')">Editar</button></div>`).join('')||'<p class="muted">Nenhuma agência cadastrada.</p>'}<div class="hier-actions"><button class="btn" onclick="newBranchForBank('${b.id}')">+ Nova agência</button></div></div></div>`}).join('');
+ d.getElementById('drawerBody').innerHTML=html||'<div class="empty">Nenhum banco cadastrado.</div>';
+ d.getElementById('drawerFoot').innerHTML=`<button class="btn" onclick="closeDrawer()">Fechar</button><button class="btn primary" onclick="editMaster('bank','')">+ Novo banco</button>`;
+};
+w.newBranchForBank=function(bankId){w.editMaster('branch','');setTimeout(()=>{const x=d.getElementById('m_parent');if(x)x.value=bankId},0)};
+
+const originalSaveMaster=w.saveMaster;
+w.saveMaster=function(type,id){originalSaveMaster(type,id);setTimeout(()=>{if(type==='client'||type==='factory'||type==='sector'||type==='shift')w.openClientHierarchy();if(type==='bank'||type==='branch')w.openBankHierarchy()},0)};
 });
 </script></body></html>
