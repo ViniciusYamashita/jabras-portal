@@ -1,1 +1,12 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Jabras Neo — Homologação V1</title><style>html,body,iframe{margin:0;width:100%;height:100%;border:0;display:block;overflow:hidden}</style></head><body><iframe id="app" src="app-v1.html?v=20260820-masterfix"></iframe><script>const f=document.getElementById('app');f.addEventListener('load',()=>{const s=f.contentDocument.createElement('script');s.src='master-ui-v2.js?v=20260820-1';f.contentDocument.body.appendChild(s)});</script></body></html>
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="jabras-build" content="2026-08-21-masterfix-v3"><title>Jabras Neo — Homologação V1</title><style>html,body{margin:0;width:100%;min-height:100%;background:#f4f7fb}</style></head><body><script>
+(async()=>{
+  const version='20260821-masterfix-v3';
+  try{
+    const res=await fetch('app-v1.html?v='+version,{cache:'no-store'});
+    if(!res.ok) throw new Error('Falha ao carregar app-v1.html');
+    let html=await res.text();
+    html=html.replace('</body>',`<script src="master-ui-v2.js?v=${version}"><\/script></body>`);
+    document.open();document.write(html);document.close();
+  }catch(err){document.body.innerHTML='<div style="font-family:Arial;padding:32px"><h2>Falha ao carregar a homologação</h2><p>'+String(err)+'</p></div>'}
+})();
+</script></body></html>
