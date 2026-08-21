@@ -1,12 +1,12 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="jabras-build" content="2026-08-21-ja-v17"><title>Jabras Neo — 管理システム（検証環境）</title><style>html,body{margin:0;width:100%;min-height:100%;background:#f4f7fb}</style></head><body><script>
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="jabras-build" content="2026-08-21-ja-v18"><title>Jabras Neo — 管理システム（検証環境）</title><style>html,body{margin:0;width:100%;min-height:100%;background:#f4f7fb}</style></head><body><script>
 (async()=>{
-  const version='20260821-ja-v17';
+  const version='20260821-ja-v18';
   try{
     const res=await fetch('app-v1.html?v='+version,{cache:'no-store'});
     if(!res.ok) throw new Error('app-v1.html の読み込みに失敗しました');
     let html=await res.text();
     html=html.replace('<html lang="pt-BR">','<html lang="ja">');
-    html=html.replace('</body>',`<script src="master-ui-v2.js?v=${version}"><\/script><script src="ja-ui.js?v=${version}"><\/script><script src="ja-functional-v2.js?v=${version}"><\/script><script src="employee-ui-v2.js?v=${version}"><\/script><script src="ja-master-v3.js?v=${version}"><\/script><script src="ui-hotfix-v15.js?v=${version}"><\/script><script src="employee-sidepanel-v1.js?v=${version}"><\/script><script src="ja-bank-v4.js?v=${version}"><\/script></body>`);
+    html=html.replace('</body>',`<script src="master-ui-v2.js?v=${version}"><\/script><script src="ja-ui.js?v=${version}"><\/script><script src="ja-functional-v2.js?v=${version}"><\/script><script src="employee-ui-v2.js?v=${version}"><\/script><script src="ja-master-v3.js?v=${version}"><\/script><script src="ui-hotfix-v15.js?v=${version}"><\/script><script src="employee-sidepanel-v1.js?v=${version}"><\/script><script src="ja-bank-v4.js?v=${version}"><\/script><script src="employee-vehicle-v2.js?v=${version}"><\/script></body>`);
     document.open();document.write(html);document.close();
   }catch(err){document.body.innerHTML='<div style="font-family:Arial,sans-serif;padding:32px"><h2>検証環境を読み込めませんでした</h2><p>'+String(err)+'</p></div>'}
 })();
