@@ -1,0 +1,16 @@
+(()=>{
+  if(window.__hmlPaymentStyleV2)return;window.__hmlPaymentStyleV2=1;
+  const st=document.createElement('style');st.textContent=`
+    .pf-combo{position:relative;width:100%}.pf-combo-btn{width:100%;height:42px;border:1px solid var(--line);border-radius:10px;background:#fff;padding:0 38px 0 12px;text-align:left;cursor:pointer;position:relative}.pf-combo-btn:after{content:'⌄';position:absolute;right:13px;top:50%;transform:translateY(-55%);color:#607089;font-size:18px}.pf-combo-menu{display:none;position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:10050;background:#fff;border:1px solid #d8e3ef;border-radius:12px;box-shadow:0 12px 30px #0b234025;padding:6px;max-height:260px;overflow:auto}.pf-combo.open .pf-combo-menu{display:block}.pf-combo-option{padding:9px 10px;border-radius:8px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pf-combo-option:hover{background:#eef5ff}.pf-combo-option.selected{background:#e7f1ff;color:#155fc0;font-weight:700}.pf-native-hidden{position:absolute!important;opacity:0!important;pointer-events:none!important;width:1px!important;height:1px!important}.pf-combo-btn:focus{outline:2px solid #b7d3ff;outline-offset:1px}
+  `;document.head.appendChild(st);
+  const isSuccess=t=>/登録しました|反映されています|保存しました|更新しました/.test(t||'');
+  function styleAlert(){const a=document.getElementById('pfAlert');if(!a)return;const t=a.textContent||'';if(isSuccess(t)){a.style.background='#eef6ff';a.style.borderColor='#9fc7f7';a.style.color='#145ea8'}else{a.style.background='#fff4f4';a.style.borderColor='#e6aaaa';a.style.color='#a22'}}
+  function skinSelect(sel){if(!sel||sel.dataset.pfSkinned==='1'||sel.disabled)return;sel.dataset.pfSkinned='1';sel.classList.add('pf-native-hidden');const wrap=document.createElement('div');wrap.className='pf-combo';const btn=document.createElement('button');btn.type='button';btn.className='pf-combo-btn';const menu=document.createElement('div');menu.className='pf-combo-menu';sel.after(wrap);wrap.append(btn,menu);
+    const rebuild=()=>{const opts=[...sel.options];const cur=opts.find(o=>o.value===sel.value);btn.textContent=cur?.textContent||'—';menu.innerHTML=opts.map(o=>`<div class="pf-combo-option ${o.value===sel.value?'selected':''}" data-value="${String(o.value).replace(/"/g,'&quot;')}">${o.textContent}</div>`).join('');menu.querySelectorAll('.pf-combo-option').forEach(o=>o.onclick=()=>{sel.value=o.dataset.value;sel.dispatchEvent(new Event('change',{bubbles:true}));wrap.classList.remove('open');rebuild()})};
+    btn.onclick=e=>{e.stopPropagation();document.querySelectorAll('.pf-combo.open').forEach(x=>x!==wrap&&x.classList.remove('open'));wrap.classList.toggle('open')};
+    new MutationObserver(rebuild).observe(sel,{childList:true,subtree:true,attributes:true,attributeFilter:['value','disabled']});sel.addEventListener('change',()=>setTimeout(rebuild,0));rebuild();
+  }
+  document.addEventListener('click',()=>document.querySelectorAll('.pf-combo.open').forEach(x=>x.classList.remove('open')));
+  function enhance(){styleAlert();skinSelect(document.getElementById('pfBank'));skinSelect(document.getElementById('pfBranch'))}
+  const mo=new MutationObserver(enhance);mo.observe(document.body,{childList:true,subtree:true,characterData:true});enhance();
+})();

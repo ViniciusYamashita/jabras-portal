@@ -1,0 +1,65 @@
+(()=>{
+  const wait=()=>{
+    if(typeof openEmployee!=='function'||typeof db==='undefined'||typeof by!=='function'||typeof save!=='function') return setTimeout(wait,60);
+    if(window.__hmlPaymentFinalV1)return;window.__hmlPaymentFinalV1=1;
+
+    const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
+    const uid=p=>p+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
+    const opts=(arr,sel)=>'<option value="">—</option>'+arr.map(x=>`<option value="${x.id}" ${x.id===sel?'selected':''}>${x.name}</option>`).join('');
+    const bankOpts=s=>opts(db.banks,s);
+    const branchOpts=(bankId,s)=>opts(db.branches.filter(x=>x.bankId===bankId),s);
+    const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+    function ensure(e){
+      if(!Array.isArray(e.bankAccounts)){
+        e.bankAccounts=[];
+        if(e.bankId||e.branchId||e.account||e.accountHolder)e.bankAccounts.push({id:uid('ba'),bankId:e.bankId||'',branchId:e.branchId||'',account:e.account||'',holder:e.accountHolder||'',startDate:'',endDate:'',current:true});
+      }
+      e.bankAccounts=e.bankAccounts.filter(x=>x.bankId||x.branchId||x.account||x.holder);
+      if(e.bankAccounts.length&&!e.bankAccounts.some(x=>x.current)){e.bankAccounts.sort((a,b)=>String(b.startDate||'').localeCompare(String(a.startDate||'')));e.bankAccounts[0].current=true}
+    }
+    const current=e=>e.bankAccounts.find(x=>x.current)||e.bankAccounts[0]||null;
+    const sync=(e,a)=>{e.bankId=a?.bankId||'';e.branchId=a?.branchId||'';e.account=a?.account||'';e.accountHolder=a?.holder||''};
+    const sorted=e=>[...e.bankAccounts].sort((a,b)=>{if(a.current!==b.current)return a.current?-1:1;return String(b.startDate||'').localeCompare(String(a.startDate||''))});
+
+    function alert(msg){const el=document.getElementById('pfAlert');if(el){el.textContent=msg;el.style.display='block'}}
+    function clearErrors(){document.querySelectorAll('.pf-invalid').forEach(x=>{x.classList.remove('pf-invalid');x.style.borderColor=''})}
+    function invalid(el){if(el){el.classList.add('pf-invalid');el.style.borderColor='#d94848'}}
+
+    function render(e,mode='view'){
+      ensure(e);save();
+      const main=drawerBody.querySelector('.employee-detail-main')||drawerBody;
+      const cur=current(e),adding=mode==='add';
+      const f=adding?{bankId:'',branchId:'',account:'',holder:'',startDate:today()}:cur;
+      const rows=sorted(e).map(x=>{const b=by(db.banks,x.bankId),br=by(db.branches,x.branchId);return `<div class="hml-bank-row ${x.current?'hml-current':''}"><div><b>${esc(b?.name||'銀行未設定')}</b><div class="muted">${esc(br?.name||'支店未設定')}</div></div><div><b>口座番号</b><div class="muted">${esc(x.account||'—')}</div></div><div><b>口座名義</b><div class="muted">${esc(x.holder||'—')}</div></div><div><b>適用期間</b><div class="muted">${esc(x.startDate||'—')} ～ ${x.current?'現在':esc(x.endDate||'—')}</div></div><div>${x.current?'<span class="hml-badge">現在使用中</span>':''}</div></div>`}).join('');
+      main.innerHTML=`<div id="pfAlert" style="display:none;margin:0 0 14px;padding:11px 13px;border-radius:10px;background:#fff4f4;border:1px solid #e6aaaa;color:#a22;font-weight:700"></div>
+      <div class="hml-bank-card"><div class="hml-bank-head"><div><h3 style="margin:0">${adding?'新しい振込口座':'現在の振込口座'}</h3><div class="muted">${adding?'必要事項を入力し、もう一度「+ 口座を追加」を押してください。':'現在有効な振込先'}</div></div>${!adding&&cur?'<span class="hml-badge">現在使用中</span>':''}</div>
+      ${f?`<div class="hml-bank-grid"><div class="field"><label>銀行 *</label><select id="pfBank" ${adding?'':'disabled'}>${bankOpts(f.bankId||'')}</select></div><div class="field"><label>支店 *</label><select id="pfBranch" ${adding?'':'disabled'}>${branchOpts(f.bankId||'',f.branchId||'')}</select></div><div class="field"><label>口座番号 *</label><input id="pfAccount" value="${esc(f.account||'')}" ${adding?'':'readonly'}></div><div class="field"><label>口座名義 *</label><input id="pfHolder" value="${esc(f.holder||'')}" ${adding?'':'readonly'}></div><div class="field"><label>適用開始日 *</label><input type="date" id="pfStart" value="${f.startDate||today()}" min="${today()}" ${adding?'':'readonly'}></div>${adding?'<div id="pfMasterActions" style="grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn mini" id="pfAddBank">+ 新しい銀行を登録</button><button type="button" class="btn mini" id="pfAddBranch">+ 新しい支店を登録</button></div>':''}</div>`:'<div class="muted">振込口座は登録されていません。</div>'}</div>
+      <div class="hml-section-head"><h3 style="margin:0">口座履歴</h3><button class="btn primary" id="pfMainAdd">+ 口座を追加</button></div><div>${rows||'<div class="muted">口座履歴はありません。</div>'}</div>`;
+      drawerFoot.innerHTML='<button class="btn" onclick="closeDrawer()">閉じる</button>';
+      document.getElementById('pfMainAdd').onclick=()=>adding?commit(e):render(e,'add');
+      const bank=document.getElementById('pfBank');if(adding&&bank)bank.onchange=()=>{document.getElementById('pfBranch').innerHTML=branchOpts(bank.value,'')};
+      const start=document.getElementById('pfStart');if(adding&&start)start.onchange=()=>{if(start.value<today()){start.value=today();invalid(start);alert('適用開始日は本日以降の日付を選択してください。')}};
+      if(adding){document.getElementById('pfAddBank').onclick=()=>masterBank();document.getElementById('pfAddBranch').onclick=()=>masterBranch()}
+    }
+
+    function commit(e){
+      clearErrors();const bank=document.getElementById('pfBank'),branch=document.getElementById('pfBranch'),account=document.getElementById('pfAccount'),holder=document.getElementById('pfHolder'),start=document.getElementById('pfStart');const miss=[];
+      if(!bank.value){miss.push('銀行');invalid(bank)}if(!branch.value){miss.push('支店');invalid(branch)}if(!account.value.trim()){miss.push('口座番号');invalid(account)}if(!holder.value.trim()){miss.push('口座名義');invalid(holder)}if(!start.value){miss.push('適用開始日');invalid(start)}if(start.value&&start.value<today()){miss.push('適用開始日');invalid(start)}
+      if(miss.length){alert('必須項目を入力してください：'+[...new Set(miss)].join('・'));return}
+      ensure(e);const prev=current(e);if(prev){prev.current=false;prev.endDate=start.value}
+      const a={id:uid('ba'),bankId:bank.value,branchId:branch.value,account:account.value.trim(),holder:holder.value.trim(),startDate:start.value,endDate:'',current:true};e.bankAccounts.push(a);sync(e,a);const now=new Date().toISOString();e.history=e.history||[];e.history.push({date:now,text:'振込口座情報を更新'});e.updatedAt=now;e.updatedText='振込口座情報を更新';save();render(e,'view');if(typeof showSavedStatus==='function')showSavedStatus();
+    }
+
+    function formBox(title,body,onSave){document.getElementById('pfInline')?.remove();const host=document.getElementById('pfMasterActions');const d=document.createElement('div');d.id='pfInline';d.style.cssText='grid-column:1/-1;border:1px solid #d7e1ef;border-radius:10px;padding:14px;background:#f8fbff;margin-top:8px';d.innerHTML=`<b>${title}</b><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">${body}</div><div style="display:flex;justify-content:flex-end;gap:8px;margin-top:10px"><button class="btn" id="pfCancelMaster">キャンセル</button><button class="btn primary" id="pfSaveMaster">登録</button></div>`;host.after(d);d.querySelector('#pfCancelMaster').onclick=()=>d.remove();d.querySelector('#pfSaveMaster').onclick=onSave}
+    function masterBank(){formBox('新しい銀行を登録','<div class="field"><label>銀行名 *</label><input id="pfBankName"></div><div class="field"><label>銀行コード *</label><input id="pfBankCode"></div>',()=>{const n=document.getElementById('pfBankName').value.trim(),c=document.getElementById('pfBankCode').value.trim();if(!n||!c){alert('銀行名と銀行コードを入力してください。');return}if(db.banks.some(x=>x.name===n||String(x.code||'')===c)){alert('同じ銀行名または銀行コードが既に登録されています。');return}const b={id:uid('bank'),name:n,code:c};db.banks.push(b);save();const sel=document.getElementById('pfBank');sel.innerHTML=bankOpts(b.id);sel.value=b.id;document.getElementById('pfBranch').innerHTML=branchOpts(b.id,'');document.getElementById('pfInline')?.remove();alert('銀行を登録しました。マスタ管理にも反映されています。')})}
+    function masterBranch(){const bank=document.getElementById('pfBank');if(!bank.value){invalid(bank);alert('先に銀行を選択してください。');return}const b=by(db.banks,bank.value);formBox('新しい支店を登録',`<div class="field"><label>銀行</label><input value="${esc(b?.name||'')}" readonly></div><div></div><div class="field"><label>支店名 *</label><input id="pfBranchName"></div><div class="field"><label>支店コード *</label><input id="pfBranchCode"></div>`,()=>{const n=document.getElementById('pfBranchName').value.trim(),c=document.getElementById('pfBranchCode').value.trim();if(!n||!c){alert('支店名と支店コードを入力してください。');return}if(db.branches.some(x=>x.bankId===bank.value&&(x.name===n||String(x.code||'')===c))){alert('この銀行には同じ支店名または支店コードが既に登録されています。');return}const br={id:uid('branch'),bankId:bank.value,name:n,code:c};db.branches.push(br);save();const sel=document.getElementById('pfBranch');sel.innerHTML=branchOpts(bank.value,br.id);sel.value=br.id;document.getElementById('pfInline')?.remove();alert('支店を登録しました。マスタ管理にも反映されています。')})}
+
+    const baseOpen=openEmployee;
+    openEmployee=function(id,tab='dados'){
+      baseOpen(id,tab);const e=by(db.employees,id);if(!e)return;
+      if(tab==='pagamento'){setTimeout(()=>render(e,'view'),120)}
+    };
+  };
+  wait();
+})();
