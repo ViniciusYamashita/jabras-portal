@@ -1,0 +1,20 @@
+(()=>{
+const wait=()=>{if(typeof openEmployee!=='function'||typeof db==='undefined'||typeof by!=='function'||typeof save!=='function')return setTimeout(wait,50);if(window.__employeeWorkHistoryV1)return;window.__employeeWorkHistoryV1=1;
+const findControl=(labelText)=>{const labels=[...drawerBody.querySelectorAll('label')];const l=labels.find(x=>x.textContent.trim()===labelText);if(!l)return null;const field=l.closest('.field')||l.parentElement;return field?.querySelector('select,input,textarea')||null};
+const optionHtml=(items,selected)=>'<option value="">—</option>'+items.map(x=>`<option value="${x.id}" ${x.id===selected?'selected':''}>${x.name}</option>`).join('');
+function bindWorkCascade(e){const factory=findControl('工場'),sector=findControl('部署'),shift=findControl('班');if(!factory||!sector||!shift)return;
+ const refresh=(factoryId,keepSector='',keepShift='')=>{const sectors=db.sectors.filter(x=>x.factoryId===factoryId);const shifts=db.shifts.filter(x=>x.factoryId===factoryId);sector.innerHTML=optionHtml(sectors,sectors.some(x=>x.id===keepSector)?keepSector:'');shift.innerHTML=optionHtml(shifts,shifts.some(x=>x.id===keepShift)?keepShift:'')};
+ refresh(factory.value,e.sectorId||'',e.shiftId||'');
+ factory.onchange=()=>{refresh(factory.value,'','');sector.value='';shift.value=''};
+}
+const jaText=(s='')=>{const t=String(s);const map=[
+ ['Aba moradia alterada','住居情報を更新'],['Aba trabalho alterada','勤務情報を更新'],['Aba dados alterada','基本情報を更新'],['Aba documentos alterada','書類情報を更新'],['Aba seguros alterada','保険情報を更新'],['Aba pagamento alterada','振込口座情報を更新'],['Aba veículo alterada','車両情報を更新'],['Aba veiculo alterada','車両情報を更新'],['Aba dependentes alterada','扶養家族情報を更新'],['Admissão cadastrada','入社情報を登録'],['Moradia alterada','住居情報を更新'],['Trabalho alterado','勤務情報を更新'],['Dados alterados','基本情報を更新']];for(const [a,b] of map)if(t.includes(a))return b;return t};
+function normalizedHistory(e){const rows=(e.history||[]).map((x,i)=>({...x,text:jaText(x.text||''),_i:i}));rows.sort((a,b)=>new Date(b.date||0)-new Date(a.date||0));const seen=new Set(),out=[];for(const x of rows){const d=String(x.date||'').slice(0,10),key=d+'|'+x.text;if(seen.has(key))continue;seen.add(key);out.push(x)}return out}
+function renderHistory(e){const main=drawerBody.querySelector('.employee-detail-main')||drawerBody;const h=normalizedHistory(e);main.innerHTML=`<div class="panel"><h3 style="margin-top:0">変更履歴</h3>${h.length?h.map(x=>`<div style="padding:10px 0;border-bottom:1px solid var(--line)"><b>${String(x.date||'—').replace('T',' ').replace('Z','')}</b> — ${x.text||'更新'}</div>`).join(''):'<div class="muted">変更履歴はありません。</div>'}</div>`;drawerFoot.innerHTML='<button class="btn" onclick="closeDrawer()">閉じる</button>'}
+function saveWork(id){const e=by(db.employees,id);if(!e)return;const factory=findControl('工場'),sector=findControl('部署'),shift=findControl('班'),work=findControl('勤務'),empNo=findControl('社員番号'),jtekt=findControl('JTEKT社員番号');
+ const old={factoryId:e.factoryId||'',sectorId:e.sectorId||'',shiftId:e.shiftId||'',work:e.work||'',empNo:e.empNo||'',jtektNo:e.jtektNo||''};
+ e.factoryId=factory?.value||'';e.sectorId=sector?.value||'';e.shiftId=shift?.value||'';e.work=work?.value||'';if(empNo)e.empNo=empNo.value;if(jtekt)e.jtektNo=jtekt.value;
+ const changed=Object.keys(old).some(k=>String(old[k]||'')!==String(e[k]||''));if(changed){const now=new Date().toISOString();e.history=e.history||[];e.history.push({date:now,text:'勤務情報を更新'});e.updatedAt=now;e.updatedText='勤務情報を更新'}save();render();openEmployee(id,'trabalho');if(typeof showSavedStatus==='function')showSavedStatus()}
+const prevOpen=openEmployee;openEmployee=function(id,tab='dados'){prevOpen(id,tab);const e=by(db.employees,id);if(!e)return;setTimeout(()=>{if(tab==='trabalho'){bindWorkCascade(e);const btn=[...drawerFoot.querySelectorAll('button')].find(b=>b.textContent.trim()==='保存');if(btn)btn.onclick=()=>saveWork(id)}if(tab==='historico')renderHistory(e)},0)};
+window.employeeSaveWork=saveWork;
+})();
