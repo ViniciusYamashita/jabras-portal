@@ -1,6 +1,6 @@
 (()=>{
  const wait=()=>{if(typeof openEmployee!=='function'||typeof db==='undefined'||typeof by!=='function'||typeof save!=='function')return setTimeout(wait,60);if(window.__hmlWorkFinalV1)return;window.__hmlWorkFinalV1=1;
- const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
  const uid2=p=>p+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
  const opt=(arr,sel,label='名称')=>`<option value="__add__">＋ 新規登録</option><option value="">—</option>`+arr.map(x=>`<option value="${x.id}" ${x.id===sel?'selected':''}>${esc(x.name||x[label]||'')}</option>`).join('');
  function render(e){const f=by(db.factories,e.factoryId),sectors=db.sectors.filter(x=>x.factoryId===e.factoryId),shifts=db.shifts.filter(x=>x.factoryId===e.factoryId),main=drawerBody.querySelector('.employee-detail-main')||drawerBody;
@@ -11,8 +11,8 @@
  <div class="field"><label>部署</label><select id="workSector">${opt(sectors,e.sectorId)}</select></div>
  <div class="field"><label>班</label><select id="workShift">${opt(shifts,e.shiftId)}</select></div>
  <div class="field"><label>工程</label><input id="workProcess" value="${esc(e.process||'')}"></div>
- <div class="field"><label>請負側責任者</label><input id="workContractorManager" value="${esc(e.contractorManager||'')}"></div>
- <div class="field"><label>工場側責任者</label><input id="workFactoryManager" value="${esc(e.factoryManager||'')}"></div>
+ <div class="field"><label>派遣元側責任者</label><input id="workContractorManager" value="${esc(e.contractorManager||'')}"></div>
+ <div class="field"><label>派遣先側責任者</label><input id="workFactoryManager" value="${esc(e.factoryManager||'')}"></div>
  </div></div><div id="workInlineMaster"></div>`;
  drawerFoot.innerHTML=`<button class="btn" onclick="closeDrawer()">閉じる</button><button class="btn primary" id="saveWorkBtn">保存</button>`;
  const emp=document.getElementById('workEmpNo'),unlock=document.getElementById('unlockEmpNo');unlock.onclick=()=>{const locked=emp.readOnly;emp.readOnly=!locked;unlock.textContent=locked?'🔓':'🔒';if(locked){emp.focus();emp.select()}};
