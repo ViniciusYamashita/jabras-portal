@@ -1,8 +1,9 @@
 (()=>{
   const wait=()=>{
     if(typeof openEmployee!=='function'||typeof db==='undefined'||typeof by!=='function'||typeof save!=='function') return setTimeout(wait,50);
-    if(window.__hmlRuntimeV2) return;
-    window.__hmlRuntimeV2=1;
+    if(window.__hmlRuntimeV3) return;
+    window.__hmlRuntimeV3=1;
+    const css=document.createElement('style');css.textContent=`.hml-bank-card{border:1px solid var(--line);border-radius:14px;padding:16px;background:#fff;margin-bottom:16px}.hml-bank-head,.hml-section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}.hml-bank-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.hml-bank-row{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:9px;display:grid;grid-template-columns:1.2fr .9fr .9fr .9fr auto;gap:10px;align-items:center}.hml-current{background:#f8fffc;border-color:#a9d9c8}.hml-badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#e7f6ef;color:var(--green);font-size:12px;font-weight:700}@media(max-width:1000px){.hml-bank-row{grid-template-columns:1fr 1fr}.hml-bank-grid{grid-template-columns:1fr}}`;document.head.appendChild(css);
     const opts=(items,selected)=>'<option value="">—</option>'+items.map(x=>`<option value="${x.id}" ${x.id===selected?'selected':''}>${x.name}</option>`).join('');
     const fieldByLabel=(text)=>{const label=[...drawerBody.querySelectorAll('label')].find(x=>x.textContent.trim()===text);if(!label)return null;return(label.closest('.field')||label.parentElement)?.querySelector('select,input,textarea')||null};
     function bindWork(e){const factory=fieldByLabel('工場'),sector=fieldByLabel('部署'),shift=fieldByLabel('班');if(!factory||!sector||!shift)return;const refresh=(fid,sectorId='',shiftId='')=>{const sectors=db.sectors.filter(x=>x.factoryId===fid),shifts=db.shifts.filter(x=>x.factoryId===fid);sector.innerHTML=opts(sectors,sectors.some(x=>x.id===sectorId)?sectorId:'');shift.innerHTML=opts(shifts,shifts.some(x=>x.id===shiftId)?shiftId:'')};refresh(factory.value,e.sectorId||'',e.shiftId||'');factory.onchange=()=>{refresh(factory.value,'','');sector.value='';shift.value=''}}
