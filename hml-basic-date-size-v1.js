@@ -1,1 +1,1 @@
-(()=>{if(window.__hmlBasicDateSizeV1)return;window.__hmlBasicDateSizeV1=1;const s=document.createElement('style');s.textContent=`#adminJoinDate,#adminLeaveDate,#adminContractExpiry,#adminDispatchEnd,#adminConflictDate{height:38px!important;min-height:38px!important;max-height:38px!important;box-sizing:border-box!important;padding-top:0!important;padding-bottom:0!important}`;document.head.appendChild(s)})();
+// CLEANUP: date sizing is now owned by hml-basic-final-v1.js. This compatibility stub can be removed after branch validation.
