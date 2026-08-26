@@ -1,1 +1,0 @@
-(()=>{const wait=()=>{if(typeof openEmployee!=='function')return setTimeout(wait,40);if(window.__hmlCustomTabSyncV2)return;window.__hmlCustomTabSyncV2=1;const base=openEmployee;openEmployee=function(id,tab='dados'){return base(id,tab)}};wait()})();
